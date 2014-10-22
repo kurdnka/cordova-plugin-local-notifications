@@ -19,7 +19,7 @@
     under the License.
 */
 
-package de.appplant.cordova.plugin.localnotification;
+package com.ginasystem.plugins.notification;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,7 +40,7 @@ public class ReceiverActivity extends Activity {
         Bundle bundle = intent.getExtras();
 
         try {
-            JSONObject args = new JSONObject(bundle.getString(Receiver.OPTIONS));
+            JSONObject args = new JSONObject(bundle.getString(MessengerNotification.OPTIONS));
             Options options = new Options(getApplicationContext()).parse(args);
 
             launchMainIntent();
@@ -65,10 +65,6 @@ public class ReceiverActivity extends Activity {
      * Fires the onclick event.
      */
     private void fireClickEvent (Options options) {
-        LocalNotification.fireEvent("click", options.getId(), options.getJSON());
-
-        if (options.getAutoCancel()) {
-            LocalNotification.fireEvent("cancel", options.getId(), options.getJSON());
-        }
+        MessengerNotification.fireEvent("click", options.getTag(), options.getJSON());
     }
 }
