@@ -25,7 +25,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
@@ -62,10 +66,26 @@ public class Options {
     }
 
     /**
+     * Returns messages as List<JSONObject>
+     */
+    public List<JSONObject> getMessages() {
+        JSONArray array = options.optJSONArray("messages");
+        List<JSONObject> messages = new ArrayList<JSONObject>();
+        if (array == null)
+            return messages;
+
+        for (int i = 0; i < messages.size(); i++)
+        {
+            messages.add(array.optJSONObject(i));
+        }
+        return messages;
+    }
+
+    /**
      * Returns the notification's message
      */
-    public String getMessage () {
-        return options.optString("message", "");
+    public String getSummary () {
+        return options.optString("summary", "");
     }
 
     /**

@@ -16,7 +16,7 @@
     </engines>
     <dependency id="org.apache.cordova.device" url="https://github.com/apache/cordova-plugin-device" />
     <js-module src="www/messenger-notification.js" name="MessengerNotification">
-        <clobbers target="plugin.notification.local" />
+        <clobbers target="window.MessengerNotification" />
     </js-module>
     <!-- android -->
     <platform name="android">

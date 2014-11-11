@@ -27,6 +27,10 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
+import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -72,7 +76,7 @@ public class MessengerNotification extends CordovaPlugin {
                     JSONObject arguments = args.optJSONObject(0);
                     Options options      = new Options(context).parse(arguments);
 
-                    add(options, true);
+                    add(options);
                     command.success();
                 }
             });
@@ -98,7 +102,7 @@ public class MessengerNotification extends CordovaPlugin {
             });
         }
 
-        if (action.equalsIgnoreCase("deviceready")) {
+        if (action.equalsIgnoreCase("knockoutReady")) {
             cordova.getThreadPool().execute( new Runnable() {
                 public void run() {
                     deviceready();
@@ -127,14 +131,8 @@ public class MessengerNotification extends CordovaPlugin {
      *
      * @param options
      *            The options that can be specified per alarm.
-     * @param doFireEvent
-     *            If the onadd callback shall be called.
      */
-    public void add (Options options, boolean doFireEvent) {
-
-        if (doFireEvent) {
-            fireEvent("add", options.getTag(), options.getJSON());
-        }
+    public void add (Options options) {
 
         Notification.Builder notification = buildNotification(options);
 
@@ -147,23 +145,39 @@ public class MessengerNotification extends CordovaPlugin {
     @SuppressLint("NewApi")
     private Notification.Builder buildNotification (Options options) {
 
-        Notification.InboxStyle style = new Notification.InboxStyle()
-                .setBigContentTitle("New messages details:")
-                .addLine("Lolololo 15:28")
-                .addLine("Trololololo, 1546");
-
         Notification.Builder notification = new Notification.Builder(context)
                 .setDefaults(0) // Do not inherit any defaults
                 .setContentTitle(options.getTitle())
-                .setContentText(options.getMessage())
+                .setContentText(options.getSummary())
                 .setNumber(options.getBadge())
-                .setTicker(options.getMessage())
+                .setTicker(options.getSummary())
                 .setSmallIcon(options.getSmallIcon())
                 .setLargeIcon(options.getIcon())
                 .setAutoCancel(true)
                 .setOngoing(false)
-                .setPriority(Notification.PRIORITY_MAX)
-                .setStyle(style);
+                .setPriority(Notification.PRIORITY_MAX);
+        
+        if (options.getTag() == "messages")
+        {
+            Notification.InboxStyle style = new Notification.InboxStyle()
+                    .setBigContentTitle(options.getTitle());
+
+            for (JSONObject message : options.getMessages())
+            {
+                String author = message.optString("author");
+                String text = message.optString("text");
+
+                Spannable sb = new SpannableString(author + "  " + text);
+                sb.setSpan(
+                        new StyleSpan(android.graphics.Typeface.BOLD),
+                        0,
+                        author.length()-1,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                );
+                style.addLine(sb);
+            }
+            notification.setStyle(style);
+        }
 
         setClickEvent(notification, options);
 
@@ -212,8 +226,6 @@ public class MessengerNotification extends CordovaPlugin {
         try {
             nc.cancel(tagToId.get(tag));
         } catch (Exception ignored) {}
-
-        fireEvent("cancel", tag, "");
     }
 
     /**
@@ -228,13 +240,10 @@ public class MessengerNotification extends CordovaPlugin {
     /**
      * Fires the given event.
      *
-     * @param  event The Name of the event
      * @param  tag   The tag of the notification
-     * @param  json  A custom (JSON) string
      */
-    public static void fireEvent (String event, String tag, String json) {
-        String params = "\"" + tag + "\",\"" + "\",\\'" + JSONObject.quote(json) + "\\'.replace(/(^\"|\"$)/g, \\'\\')";
-        String js     = "setTimeout('plugin.notification.local.on" + event + "(" + params + ")',0)";
+    public static void fireClickEvent(String tag) {
+        String js     = "setTimeout(function () { MessengerNotification.fire(\"click\", \"" + tag + "\"); }, 1)";
 
         // webview may available, but callbacks needs to be executed
         // after deviceready
