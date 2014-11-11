@@ -49,12 +49,6 @@ public class MessengerNotification extends CordovaPlugin {
     protected final static String PLUGIN_NAME = "MessengerNotification";
     public static final String OPTIONS = "MESSENGER_NOTIFICATION_OPTIONS";
 
-    private final static HashMap<String, Integer> tagToId = new HashMap<String, Integer>();
-    static {
-        tagToId.put("messages", 42);
-        tagToId.put("waypoints", 43);
-    }
-
     private   static CordovaWebView webView = null;
     private   static Boolean deviceready = false;
     protected static Context context = null;
@@ -102,7 +96,7 @@ public class MessengerNotification extends CordovaPlugin {
             });
         }
 
-        if (action.equalsIgnoreCase("knockoutReady")) {
+        if (action.equalsIgnoreCase("init")) {
             cordova.getThreadPool().execute( new Runnable() {
                 public void run() {
                     deviceready();
@@ -140,6 +134,16 @@ public class MessengerNotification extends CordovaPlugin {
     }
 
     /**
+     * Converts tag (string) to integer ID using internal hashCode method
+     * @param tag notification tag
+     * @return notification ID
+     */
+    private static int tagToId(String tag)
+    {
+        return tag.hashCode();
+    }
+
+    /**
      * Creates the notification.
      */
     @SuppressLint("NewApi")
@@ -148,30 +152,31 @@ public class MessengerNotification extends CordovaPlugin {
         Notification.Builder notification = new Notification.Builder(context)
                 .setDefaults(0) // Do not inherit any defaults
                 .setContentTitle(options.getTitle())
-                .setContentText(options.getSummary())
+                .setContentText(options.getTicker())
                 .setNumber(options.getBadge())
-                .setTicker(options.getSummary())
+                .setTicker(options.getTicker())
                 .setSmallIcon(options.getSmallIcon())
                 .setLargeIcon(options.getIcon())
                 .setAutoCancel(true)
                 .setOngoing(false)
                 .setPriority(Notification.PRIORITY_MAX);
         
-        if (options.getTag() == "messages")
+        if (options.getMessages().size() > 0)
         {
             Notification.InboxStyle style = new Notification.InboxStyle()
-                    .setBigContentTitle(options.getTitle());
+                    .setBigContentTitle(options.getTitle())
+                    .setSummaryText(options.getSummary());
 
             for (JSONObject message : options.getMessages())
             {
-                String author = message.optString("author");
+                String label = message.optString("label");
                 String text = message.optString("text");
 
-                Spannable sb = new SpannableString(author + "  " + text);
+                Spannable sb = new SpannableString(label + "  " + text);
                 sb.setSpan(
                         new StyleSpan(android.graphics.Typeface.BOLD),
                         0,
-                        author.length()-1,
+                        label.length(),
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 );
                 style.addLine(sb);
@@ -204,11 +209,7 @@ public class MessengerNotification extends CordovaPlugin {
      */
     @SuppressWarnings("deprecation")
     private void showNotification (Notification.Builder notification, Options options) {
-        int id                  = 0;
-
-        try {
-            id = tagToId.get(options.getTag());
-        } catch (Exception ignored) {}
+        int id = tagToId(options.getTag());
 
 
         getNotificationManager().notify(id, notification.build());
@@ -224,7 +225,7 @@ public class MessengerNotification extends CordovaPlugin {
         NotificationManager nc = getNotificationManager();
 
         try {
-            nc.cancel(tagToId.get(tag));
+            nc.cancel(tagToId(tag));
         } catch (Exception ignored) {}
     }
 
@@ -242,8 +243,8 @@ public class MessengerNotification extends CordovaPlugin {
      *
      * @param  tag   The tag of the notification
      */
-    public static void fireClickEvent(String tag) {
-        String js     = "setTimeout(function () { MessengerNotification.fire(\"click\", \"" + tag + "\"); }, 1)";
+    public static void fireClickEvent(String tag, String json) {
+        String js     = "setTimeout(function () { MessengerNotification.fire(\"click\", \"" + tag + /*"\", \"" + json  + */"\"); }, 1)";
 
         // webview may available, but callbacks needs to be executed
         // after deviceready

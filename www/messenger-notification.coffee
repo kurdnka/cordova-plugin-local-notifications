@@ -175,7 +175,7 @@ class EventEmitter
 
 class MessengerNotification extends EventEmitter
 
-    knockoutReady: () ->
+    init: () ->
         cordova.exec(null, null, 'MessengerNotification', 'knockoutReady', [])
 
     ###*

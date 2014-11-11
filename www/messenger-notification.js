@@ -279,7 +279,7 @@
       return MessengerNotification.__super__.constructor.apply(this, arguments);
     }
 
-    MessengerNotification.prototype.knockoutReady = function() {
+    MessengerNotification.prototype.init = function() {
       return cordova.exec(null, null, 'MessengerNotification', 'knockoutReady', []);
     };
 

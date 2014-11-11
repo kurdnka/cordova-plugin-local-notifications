@@ -74,7 +74,7 @@ public class Options {
         if (array == null)
             return messages;
 
-        for (int i = 0; i < messages.size(); i++)
+        for (int i = 0; i < array.length(); i++)
         {
             messages.add(array.optJSONObject(i));
         }
@@ -89,6 +89,13 @@ public class Options {
     }
 
     /**
+     * Returns the ticker
+     */
+    public String getTicker () {
+        return options.optString("ticker", "");
+    }
+
+    /**
      * Returns the notification's title
      */
     public String getTitle () {
@@ -99,7 +106,7 @@ public class Options {
      * Returns the icon's ID
      */
     public Bitmap getIcon () {
-        String icon = options.optString("icon", "icon");
+        String icon = options.optString("icon", "ic_large_notify");
         Bitmap bmp = null;
 
         if (icon.startsWith("http")) {
@@ -120,7 +127,7 @@ public class Options {
      */
     public int getSmallIcon () {
         int resId;
-        String iconName = options.optString("smallIcon", "");
+        String iconName = options.optString("smallIcon", "ic_stat_notify");
 
         resId = getIconValue(packageName, iconName);
 

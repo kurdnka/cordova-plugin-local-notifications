@@ -65,6 +65,6 @@ public class ReceiverActivity extends Activity {
      * Fires the onclick event.
      */
     private void fireClickEvent (Options options) {
-        MessengerNotification.fireClickEvent(options.getTag());
+        MessengerNotification.fireClickEvent(options.getTag(), options.getJSON());
     }
 }
