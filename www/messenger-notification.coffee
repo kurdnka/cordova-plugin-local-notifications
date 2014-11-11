@@ -175,6 +175,9 @@ class EventEmitter
 
 class MessengerNotification extends EventEmitter
 
+    knockoutReady: () ->
+        cordova.exec(null, null, 'MessengerNotification', 'knockoutReady', [])
+
     ###*
     Add a new entry to the registry
     @param {Object} options The notification properties
