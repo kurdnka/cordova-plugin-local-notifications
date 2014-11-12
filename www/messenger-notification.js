@@ -272,12 +272,25 @@
 
   })();
 
+
+  /**
+  start method must be called right after the application is ready
+  otherwise the plugin won't fire any events
+   */
+
   MessengerNotification = (function(_super) {
     __extends(MessengerNotification, _super);
 
     function MessengerNotification() {
       return MessengerNotification.__super__.constructor.apply(this, arguments);
     }
+
+
+    /**
+    This methods tells the plugin that application is ready to receive
+    events from the plugin. If any event (notification click) has occured 
+    while the app was not running, it will wait in a queue till this call.
+     */
 
     MessengerNotification.prototype.start = function() {
       return cordova.exec(null, null, 'MessengerNotification', 'start', []);
