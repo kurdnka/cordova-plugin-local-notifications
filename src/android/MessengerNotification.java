@@ -96,7 +96,7 @@ public class MessengerNotification extends CordovaPlugin {
             });
         }
 
-        if (action.equalsIgnoreCase("init")) {
+        if (action.equalsIgnoreCase("start")) {
             cordova.getThreadPool().execute( new Runnable() {
                 public void run() {
                     deviceready();
